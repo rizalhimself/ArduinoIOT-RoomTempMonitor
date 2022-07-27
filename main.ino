@@ -22,6 +22,8 @@ int status = WL_IDLE_STATUS;
 //Deklarasi Variabel ThinkSpeak
 unsigned long CHANNEL_ID = 1809385;
 const char * API_KEY = "42AKO31QXAUWA3TB";
+const int fieldSuhu = 1;
+const int fieldKelembapan = 2; 
 
 void ConnectWIFI()
 {
@@ -56,6 +58,7 @@ void setup()
     Serial.begin(9600);
     Serial1.begin(9600);
     WiFi.init(&Serial1);
+    dht.begin();
     lcd.init();
     lcd.backlight();
     lcd.setCursor(0,0);
@@ -67,5 +70,6 @@ void setup()
 
 void loop()
 {
+    
     
 }
