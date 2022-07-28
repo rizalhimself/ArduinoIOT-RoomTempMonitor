@@ -15,13 +15,19 @@ char SSID[] = "RizalNet-Brobot";
 char PASS[] = "blackbird16111992";
 
 //Deklarasi Variabel
+WiFiEspClient client;
 float kelembapan, suhu;
 String waktu, tanggal;
 int status = WL_IDLE_STATUS;
+unsigned long waktuTerakhirTulis = 0;
+unsigned long waktuTerakhirBaca = 0;
+const unsigned long intervalTulis = 20000;
+const unsigned long intervalBaca = 5000;
 
 //Deklarasi Variabel ThinkSpeak
 unsigned long CHANNEL_ID = 1809385;
-const char * API_KEY = "42AKO31QXAUWA3TB";
+const char * WRITE_API_KEY = "42AKO31QXAUWA3TB";
+const char * READ_API_KEY = "HK9CI6MW0NBNHJ96";
 const int fieldSuhu = 1;
 const int fieldKelembapan = 2; 
 
@@ -40,7 +46,7 @@ void ConnectWIFI()
         lcd.print("Modul Terdeteksi!");
         delay(1000);
         lcd.setCursor(0,1);
-        lcd.print("Mengoneksikan ")+SSID;
+        lcd.print("Mengoneksikan...");
         status = WiFi.begin(SSID,PASS);
         delay(1000);
     }
@@ -51,7 +57,22 @@ void ConnectWIFI()
     lcd.print(SSID);
 }
 
-
+void uploadData()
+{
+    ThingSpeak.setField(fieldSuhu,suhu);
+    ThingSpeak.setField(fieldKelembapan,kelembapan);
+    int stats = ThingSpeak.writeFields(CHANNEL_ID,WRITE_API_KEY);
+    Serial.println(suhu);
+    Serial.println(kelembapan);
+    Serial.println(stats);
+    if(stats == '-303')
+    {
+        lcd.clear();
+        lcd.setCursor(0,1);
+        lcd.autoscroll();
+        lcd.print("Menulis data Suhu dan Kelembapan!");
+    }
+}
 
 void setup()
 {
@@ -66,10 +87,17 @@ void setup()
     delay(2000);
     lcd.clear();
     ConnectWIFI();
+    ThingSpeak.begin(client);
 }
 
 void loop()
 {
-    
+    suhu = dht.readTemperature();
+    kelembapan = dht.readHumidity();
+    if (millis() - waktuTerakhirTulis > intervalTulis)
+    {
+        uploadData();
+        waktuTerakhirTulis = millis();
+    }
     
 }
